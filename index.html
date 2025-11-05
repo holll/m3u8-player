@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge，chrome=1">
+		<meta http-equiv="Cache-Control" content="no-siteapp">
+		<meta name="keywords" content="M3U8在线播放,M3U8播放器,M3U8直播源,M3U8在线测试">
+		<meta name="description" content="M3U8在线播放器">
+		<meta name="referrer" content="no-referrer">
+		<link rel="shortcut icon" href="favicon.ico" />
+		<link rel="stylesheet" href="./css/amazeui.flat.min.css">
+		<link rel="stylesheet" href="./css/public.css">
+		<link rel="stylesheet" href="./css/main.css">
+		<script src="./js/amazeui.min.js"></script>
+		<script src="./js/jquery.min.js"></script>
+		<script src="./js/hls.min.js"></script>
+		<script defer src="./js/main.js"></script>
+		<title>M3U8在线播放器</title>
+	</head>
+	<body>
+		<div class="am-container">
+			<div class="logo">m3u8在线播放器</div>
+			<div class="am-u-lg-6 input-div">
+				<form method="post" id="str-post" class="am-input-group am-input-group-primary">
+					<input type="text" name="url" placeholder="请输入m3u8播放地址" autocomplete="off" class="am-form-field s-input">
+					<span class="am-input-group-btn">
+						<button class="am-btn am-btn-primary" type="submit">
+							<span class="am-icon-play"></span>
+						</button>
+					</span>
+				</form>
+			</div>
+			<video id="player" controls></video>
+		</div>
+	</body>
+</html>
