@@ -1,4 +1,5 @@
 var currentHls = null;
+var currentFlv = null;
 
 function getAutoPlayPermission() {
   var canAutoPlay = false;
@@ -38,7 +39,42 @@ function normalizeUrl(rawUrl) {
   return trimmedUrl;
 }
 
-function playM3u8(url) {
+function updatePlayButtonState() {
+  var playButton = $("#str-post button[type='submit']");
+  var inputValue = $(".s-input").val();
+  var isDisabled = !inputValue || !inputValue.trim();
+  playButton.prop("disabled", isDisabled);
+  playButton.toggleClass("am-disabled", isDisabled);
+}
+
+function cleanupPlayer(video) {
+  if (currentHls) {
+    currentHls.destroy();
+    currentHls = null;
+  }
+  if (currentFlv) {
+    currentFlv.destroy();
+    currentFlv = null;
+  }
+  video.removeAttribute("src");
+  video.load();
+}
+
+function getMediaType(url) {
+  var pureUrl = url.split("?")[0].split("#")[0].toLowerCase();
+  if (pureUrl.indexOf(".m3u8") > -1) {
+    return "hls";
+  }
+  if (pureUrl.indexOf(".flv") > -1) {
+    return "flv";
+  }
+  if (pureUrl.indexOf(".mp4") > -1) {
+    return "mp4";
+  }
+  return "auto";
+}
+
+function playMedia(url) {
   var m3u8Url = decodeURIComponent(url || "");
   if (!m3u8Url) {
     return;
@@ -47,13 +83,33 @@ function playM3u8(url) {
   video.volume = 1.0;
   video.muted = true;
   var canAutoPlay = getAutoPlayPermission();
+  var mediaType = getMediaType(m3u8Url);
+  cleanupPlayer(video);
 
-  if (currentHls) {
-    currentHls.destroy();
-    currentHls = null;
+  if (mediaType === "mp4") {
+    video.src = m3u8Url;
+    var mp4PlayPromise = video.play();
+    handlePlayPromise(mp4PlayPromise, video, canAutoPlay);
+    return;
   }
 
-  if (Hls.isSupported()) {
+  if (mediaType === "flv") {
+    if (window.flvjs && flvjs.isSupported()) {
+      currentFlv = flvjs.createPlayer({
+        type: "flv",
+        url: m3u8Url,
+      });
+      currentFlv.attachMediaElement(video);
+      currentFlv.load();
+      var flvPlayPromise = video.play();
+      handlePlayPromise(flvPlayPromise, video, canAutoPlay);
+      return;
+    }
+    alert("当前浏览器不支持FLV播放，请更换浏览器后重试");
+    return;
+  }
+
+  if ((mediaType === "hls" || mediaType === "auto") && Hls.isSupported()) {
     currentHls = new Hls();
     currentHls.loadSource(m3u8Url);
     currentHls.attachMedia(video);
@@ -64,7 +120,10 @@ function playM3u8(url) {
     return;
   }
 
-  if (video.canPlayType("application/vnd.apple.mpegurl")) {
+  if (
+    (mediaType === "hls" || mediaType === "auto") &&
+    video.canPlayType("application/vnd.apple.mpegurl")
+  ) {
     video.src = m3u8Url;
     video.addEventListener("loadedmetadata", function onLoadedMetadata() {
       video.removeEventListener("loadedmetadata", onLoadedMetadata);
@@ -74,7 +133,7 @@ function playM3u8(url) {
     return;
   }
 
-  alert("当前浏览器不支持HLS播放，请更换浏览器后重试");
+  alert("当前浏览器不支持该格式播放，请更换浏览器后重试");
 }
 var uri = window.location.href.split("#")[1];
 if (uri != null) {
@@ -90,7 +149,8 @@ if (uri != null) {
   $(".am-container").removeClass("am-container");
   var normalizedUri = normalizeUrl(uri);
   $(".s-input").val(normalizedUri);
-  playM3u8(normalizedUri);
+  updatePlayButtonState();
+  playMedia(normalizedUri);
 //   setTimeout(function () {
 //     $("html,body").animate(
 //       {
@@ -100,6 +160,8 @@ if (uri != null) {
 //     );
 //   }, 3000);
 }
+$(".s-input").on("input", updatePlayButtonState);
+updatePlayButtonState();
 $("#str-post").submit(function () {
   $("html,body").animate(
     {
@@ -111,10 +173,10 @@ $("#str-post").submit(function () {
   var playUrl = normalizeUrl(inputField.val());
   if (!playUrl) {
     alert("请输入有效的播放地址");
+    updatePlayButtonState();
     return false;
   }
   inputField.val(playUrl);
-  playM3u8(playUrl);
+  playMedia(playUrl);
   return false;
 });
-
