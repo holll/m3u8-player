@@ -1,5 +1,10 @@
-.input-div{width:100%;padding:0 0 20px 0}
+.input-div{width:100%;padding:0 0 20px 0;max-width:720px;margin:0 auto}
 .s-input{border-right:0;border-radius:0;}
 .am-btn-default:focus, .am-btn-default:hover, .am-dropdown.am-active .am-btn-default.am-dropdown-toggle{border-color:#0e90d2;background-color:#eee;}
 .start{float:right;margin-top:-38px}
-#player{margin-bottom:.3em;height:548px;width:100%}
+#player{margin-bottom:12px;width:100%;height:auto;aspect-ratio:16/9;max-height:70vh;background:#000;border-radius:8px}
+@media only screen and (max-width:640px){
+  .logo{font-size:24px;padding:16px 0}
+  .input-div{padding-bottom:12px}
+  #player{max-height:55vh;border-radius:6px}
+}
